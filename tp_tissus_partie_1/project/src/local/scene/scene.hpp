@@ -89,11 +89,14 @@ private:
     /** Position of point 1 */
     cpe::vec3 p1;
 
+    cpe::vec3 p2;
+
     /** Rest length of spring 0-1 */
     float L10_rest;
 
     /** Speed of spring 1 */
     cpe::vec3 v1;
+    cpe::vec3 v2;
 
 
 

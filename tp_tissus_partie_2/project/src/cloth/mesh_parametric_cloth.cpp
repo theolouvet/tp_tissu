@@ -64,6 +64,7 @@ void mesh_parametric_cloth::integration_step(float const dt)
     ASSERT_CPE(static_cast<int>(speed_data.size()) == size_vertex(),"Incorrect size");
 
 
+
     int const Nu = size_u();
     int const Nv = size_v();
     //*************************************************************//
@@ -75,7 +76,49 @@ void mesh_parametric_cloth::integration_step(float const dt)
     //
     //
     //*************************************************************//
+    float Lo = 0.1;
+    float k = 10;
 
+    vec3 F[Nu][Nv]  ;
+    for(int ku=0 ; ku<Nu ; ++ku)
+    {
+        for(int kv=0 ; kv<Nv  ; ++kv)
+        {
+            for(int ik = -1; ik<1; ik+=2){
+                if(ku + ik > Nu || ku + ik < 0 )
+                    continue;
+                vec3 u_cote = vertex(ku, kv) - vertex(ku + ik, kv);
+                F[ku][kv] += k * (Lo - norm(u_cote))*u_cote/norm(u_cote);
+            }
+            for(int ik = -1; ik<1; ik+=2){
+                if(kv + ik > Nv || kv + ik < 0 )
+                    continue;
+                vec3 u_hautbas = vertex(ku, kv) - vertex(ku, kv + ik);
+                F[ku][kv] += k * (Lo - norm(u_hautbas))*u_hautbas/norm(u_hautbas);
+            }
+
+          }
+
+    }
+
+
+    vec3 v[Nu][Nv];
+
+    for(int ku=0 ; ku<Nu ; ++ku)
+    {
+        for(int kv=0 ; kv<Nv  ; ++kv)
+        {
+
+
+           v[ku][kv]+= dt * F[ku][kv];
+           vertex(ku, kv) += dt * v[ku][kv];
+
+            if(ku == 0 && kv == 0)
+                vertex(ku,kv) = vec3(ku, kv, 1);
+            if(ku == Nu && kv == 0)
+                vertex(ku,kv) = vec3(Nu, kv, 1);
+        }
+    }
 
     //security check (throw exception if divergence is detected)
     static float const LIMIT=30.0f;
@@ -93,6 +136,7 @@ void mesh_parametric_cloth::integration_step(float const dt)
     }
 
 }
+
 
 void mesh_parametric_cloth::set_plane_xy_unit(int const size_u_param,int const size_v_param)
 {
