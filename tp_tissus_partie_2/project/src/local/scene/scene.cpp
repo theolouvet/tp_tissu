@@ -49,7 +49,7 @@ void scene::load_scene()
     mesh_ground = build_ground(1.0f , -1.101f);
     mesh_ground.fill_empty_field_by_default();
     mesh_ground_opengl.fill_vbo(mesh_ground);
-
+    std::cout<<"odnvpornpovnerpo"<<mesh_ground.vertex(0);
     //*****************************************//
     // Sphere
     //*****************************************//
@@ -63,6 +63,8 @@ void scene::load_scene()
     mesh_cloth.set_plane_xy_unit(30,30);
     mesh_cloth.fill_empty_field_by_default();
     mesh_cloth_opengl.fill_vbo(mesh_cloth);
+
+
 
 
 }

@@ -41,22 +41,47 @@ void mesh_parametric_cloth::update_force()
     {
         for(int kv=0 ; kv<Nv ; ++kv)
         {
-            force(ku,kv) = g_normalized;
+            force(ku,kv) =  g_normalized;
+
         }
     }
 
     //*************************************************************//
     // TO DO, Calculer les forces s'appliquant sur chaque sommet
     //*************************************************************//
-    //
-    // ...
-    //
-    //
-    //
+    float Lo = 1./(Nu - 1.);
+    float L1 = (float) 1.0f * sqrt(2)/(Nu-1.);
+    float k = 10;
+    float k2 = 8;
+    vec3 voisins[12] = {vec3(1,0,Lo),vec3(-1,0,Lo),vec3(0,1,Lo),vec3(0,-1,Lo),
+                      vec3(1,1,L1),vec3(-1,1,L1),vec3(1,-1, L1),vec3(-1,-1, L1),
+                       vec3(2,0,2*Lo),vec3(-2,0,2*Lo),vec3(0,2,2*Lo),vec3(0,-2,2*Lo)};
+
+    vec3 v;
+    vec3 u;
+    float K;
+    for(int ku=0 ; ku<Nu; ++ku)
+    {
+        for(int kv=0 ; kv<Nv ; ++kv)
+        {
+           for(int ik = 0 ; ik < 12; ik++){
+               v = voisins[ik];
+               if(ku + v.x() < 0 || ku + v.x()>Nu - 1 || kv + v.y()<0 || kv + v.y()>Nv - 1)
+                   continue;
+               K = k;
+               if(ik > 7)
+                   K = k2;
+               u = vertex(ku, kv) - vertex(ku + v.x(), kv + v.y());
+               force(ku, kv) += K * (v.z() - norm(u))*u/norm(u);
+           }
+
+         }
+
+    }
     //*************************************************************//
 
-
 }
+
 
 void mesh_parametric_cloth::integration_step(float const dt)
 {
@@ -76,47 +101,47 @@ void mesh_parametric_cloth::integration_step(float const dt)
     //
     //
     //*************************************************************//
-    float Lo = 0.1;
-    float k = 10;
 
-    vec3 F[Nu][Nv]  ;
-    for(int ku=0 ; ku<Nu ; ++ku)
+
+
+    force (0,0) = vec3(0,0,0);
+    force(Nu - 1, 0) = vec3(0,0,0);
+    float mu = 0.01f;
+    vec3 c = vec3(0.5f,0.05f,-1.1f);
+    float r = 0.198;
+    vec3 normal = vec3(0.0f,0.0f,1.0f);
+    vec3 p0 = vec3(-0.5f,-1.0f,-1.1f);
+    float m1 = 0;
+    float m2 = 1;
+    vec3 test = vec3(0,0,0);
+    for(int ku=0 ; ku<Nu  ; ++ku)
     {
-        for(int kv=0 ; kv<Nv  ; ++kv)
-        {
-            for(int ik = -1; ik<1; ik+=2){
-                if(ku + ik > Nu || ku + ik < 0 )
-                    continue;
-                vec3 u_cote = vertex(ku, kv) - vertex(ku + ik, kv);
-                F[ku][kv] += k * (Lo - norm(u_cote))*u_cote/norm(u_cote);
-            }
-            for(int ik = -1; ik<1; ik+=2){
-                if(kv + ik > Nv || kv + ik < 0 )
-                    continue;
-                vec3 u_hautbas = vertex(ku, kv) - vertex(ku, kv + ik);
-                F[ku][kv] += k * (Lo - norm(u_hautbas))*u_hautbas/norm(u_hautbas);
-            }
-
-          }
-
-    }
-
-
-    vec3 v[Nu][Nv];
-
-    for(int ku=0 ; ku<Nu ; ++ku)
-    {
-        for(int kv=0 ; kv<Nv  ; ++kv)
+        for(int kv=0 ; kv<Nv   ; ++kv)
         {
 
+           speed(ku,kv) = (1 - mu*dt) *speed(ku,kv) + dt * force(ku, kv);
+           vertex(ku, kv) += dt * speed(ku, kv);
+           if(vertex(ku, kv).y() >= 1.1f){
+               speed(ku,kv) = (1 - mu*dt) *speed(ku,kv);
+               vertex(ku, kv) += dt * speed(ku, kv);
+            }
 
-           v[ku][kv]+= dt * F[ku][kv];
-           vertex(ku, kv) += dt * v[ku][kv];
+           if(dot(vertex(ku, kv)- p0, normal) <= 0){
+               speed(ku,kv) = -mu*dot(speed(ku,kv),normal) * normal +
+                       (speed(ku,kv)- dot(speed(ku,kv),normal)* normal);
+               vertex(ku, kv) = vertex(ku,kv) - dot(vertex(ku, kv)- p0, normal) *normal;
+           }
 
-            if(ku == 0 && kv == 0)
-                vertex(ku,kv) = vec3(ku, kv, 1);
-            if(ku == Nu && kv == 0)
-                vertex(ku,kv) = vec3(Nu, kv, 1);
+           if(norm(vertex(ku, kv) - c) < r + 1 || norm(vertex(ku, kv) - c) > r - 1 )
+               test = vertex(ku,kv);
+           if(norm(vertex(ku, kv) - c) < r){
+               std::cout << "test" << std::endl;
+               vec3 u = vertex(ku, kv) - c;
+               speed(ku,kv) += 1/(m1+m2)*(m2*dot(vec3(0,0,0),u)-1/2*(m1+3*m2)*dot(speed(ku,kv),u))*u;
+               vertex(ku, kv) = vertex(ku,kv) - dot(vertex(ku, kv) - test , u) *u;
+           }
+
+
         }
     }
 

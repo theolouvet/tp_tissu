@@ -42,6 +42,7 @@ public:
     void update_force();
     void integration_step(float dt);
 
+
 private:
 
     std::vector<vec3> speed_data;
