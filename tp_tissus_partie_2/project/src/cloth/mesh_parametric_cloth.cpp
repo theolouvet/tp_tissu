@@ -41,7 +41,7 @@ void mesh_parametric_cloth::update_force()
     {
         for(int kv=0 ; kv<Nv ; ++kv)
         {
-            force(ku,kv) =  g_normalized;
+            force(ku,kv) = g_normalized;
 
         }
     }
@@ -111,9 +111,7 @@ void mesh_parametric_cloth::integration_step(float const dt)
     float r = 0.198;
     vec3 normal = vec3(0.0f,0.0f,1.0f);
     vec3 p0 = vec3(-0.5f,-1.0f,-1.1f);
-    float m1 = 0;
-    float m2 = 1;
-    vec3 test = vec3(0,0,0);
+    vec3 u;
     for(int ku=0 ; ku<Nu  ; ++ku)
     {
         for(int kv=0 ; kv<Nv   ; ++kv)
@@ -132,16 +130,12 @@ void mesh_parametric_cloth::integration_step(float const dt)
                vertex(ku, kv) = vertex(ku,kv) - dot(vertex(ku, kv)- p0, normal) *normal;
            }
 
-           if(norm(vertex(ku, kv) - c) < r + 1 || norm(vertex(ku, kv) - c) > r - 1 )
-               test = vertex(ku,kv);
            if(norm(vertex(ku, kv) - c) < r){
-               std::cout << "test" << std::endl;
-               vec3 u = vertex(ku, kv) - c;
-               speed(ku,kv) += 1/(m1+m2)*(m2*dot(vec3(0,0,0),u)-1/2*(m1+3*m2)*dot(speed(ku,kv),u))*u;
-               vertex(ku, kv) = vertex(ku,kv) - dot(vertex(ku, kv) - test , u) *u;
+               u =r * normalized(vertex(ku, kv) - c);
+               speed(ku,kv) = speed(ku, kv) - dot(speed(ku,kv),u)*u;
+               force(ku,kv)+=  -dot(force(ku,kv),u)*u;
+               vertex(ku, kv) = u + c;
            }
-
-
         }
     }
 
