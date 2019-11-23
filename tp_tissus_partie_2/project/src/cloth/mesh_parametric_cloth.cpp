@@ -60,6 +60,12 @@ void mesh_parametric_cloth::update_force()
     vec3 v;
     vec3 u;
     float K;
+
+    //wind
+    float Kw = 0.01f;
+    vec3 Nw = vec3(0,1,0);
+    Nw = normalized(Nw);
+
     for(int ku=0 ; ku<Nu; ++ku)
     {
         for(int kv=0 ; kv<Nv ; ++kv)
@@ -74,6 +80,9 @@ void mesh_parametric_cloth::update_force()
                u = vertex(ku, kv) - vertex(ku + v.x(), kv + v.y());
                force(ku, kv) += K * (v.z() - norm(u))*u/norm(u);
            }
+            //wind 
+            vec3 normal = normal_data[ku,kv];
+            force(ku,kv) += Kw*dot(normal,Nw)*normal;
 
          }
 
@@ -108,7 +117,7 @@ void mesh_parametric_cloth::integration_step(float const dt)
     force(Nu - 1, 0) = vec3(0,0,0);
     float mu = 0.01f;
     vec3 c = vec3(0.5f,0.05f,-1.1f);
-    float r = 0.198;
+    float r = 0.198 + 0.002;
     vec3 normal = vec3(0.0f,0.0f,1.0f);
     vec3 p0 = vec3(-0.5f,-1.0f,-1.1f);
     vec3 u;
@@ -133,7 +142,12 @@ void mesh_parametric_cloth::integration_step(float const dt)
            if(norm(vertex(ku, kv) - c) < r){
                u =r * normalized(vertex(ku, kv) - c);
                speed(ku,kv) = speed(ku, kv) - dot(speed(ku,kv),u)*u;
+
                force(ku,kv)+=  -dot(force(ku,kv),u)*u;
+
+                // if ((force(ku,kv).x() < 0.01f) && (force(ku,kv).y() < 0.01f) && (force(ku,kv).z() < 0.01f))
+                //     force(ku,kv) = vec3(0,0,0);
+
                vertex(ku, kv) = u + c;
            }
         }

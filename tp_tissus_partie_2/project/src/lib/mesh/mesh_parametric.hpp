@@ -22,7 +22,7 @@
 #define MESH_PARAMETRIC_HPP
 
 #include "mesh_basic.hpp"
-
+#include <math.h>
 #include <vector>
 
 

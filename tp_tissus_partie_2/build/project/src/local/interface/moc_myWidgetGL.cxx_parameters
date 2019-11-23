@@ -1,11 +1,11 @@
 -I/usr/include/qt4
 -I/usr/include/qt4/QtGui
 -I/usr/include/qt4/QtCore
--I/fs03/share/users/theo.louvet/home/Documents/tp_tissus/tp_tissus_partie_2/build
--DQT_NO_DEBUG
+-I/home/thep/Documents/tp_tissu/tp_tissus_partie_2/build
+-D$<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>
 -DQT_GUI_LIB
 -DQT_CORE_LIB
 -DCORRECTION
 -o
-/fs03/share/users/theo.louvet/home/Documents/tp_tissus/tp_tissus_partie_2/build/project/src/local/interface/moc_myWidgetGL.cxx
-/fs03/share/users/theo.louvet/home/Documents/tp_tissus/tp_tissus_partie_2/project/src/local/interface/myWidgetGL.hpp
+/home/thep/Documents/tp_tissu/tp_tissus_partie_2/build/project/src/local/interface/moc_myWidgetGL.cxx
+/home/thep/Documents/tp_tissu/tp_tissus_partie_2/project/src/local/interface/myWidgetGL.hpp
